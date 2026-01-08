@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: hyeonbeen 
+data:
+  CHROMA_HOST: gangwon-chroma-db
+  CHROMA_PORT: "8000"

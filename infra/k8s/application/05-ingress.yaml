@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gangwon-hyeonbeen-ingress
+  namespace: hyeonbeen
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: gangwon-hyeonbeen.duckdns.org 
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gangwon-hyeonbeen-backend
+                port:
+                  number: 8000

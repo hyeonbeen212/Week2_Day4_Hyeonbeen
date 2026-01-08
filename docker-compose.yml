@@ -1,0 +1,33 @@
+services:
+  backend:
+    build: .
+    image: gangwon-backend-image 
+    container_name: gangwon-ohhyeonbeen-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHROMA_HOST=db
+      - CHROMA_PORT=8000
+    depends_on:
+      - db
+    networks:
+      - gangwon-network
+
+  db:
+    image: chromadb/chroma:latest
+    container_name: gangwon-chroma-db
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    networks:
+      - gangwon-network
+
+networks:
+  gangwon-network:
+    driver: bridge
+
+volumes:
+  chroma-data:
+    driver: local

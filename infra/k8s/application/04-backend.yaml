@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gangwon-hyeonbeen-backend
+  namespace: hyeonbeen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gangwon-hyeonbeen-backend
+  template:
+    metadata:
+      labels:
+        app: gangwon-hyeonbeen-backend
+    spec:
+      containers:
+        - name: backend
+          image: gangwon-hyeonbeen-backend:lite
+          imagePullPolicy: Never 
+          ports:
+            - containerPort: 8000
+          env:
+            - name: CHROMA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: CHROMA_HOST
+            - name: CHROMA_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: CHROMA_PORT
+            - name: UPSTAGE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: UPSTAGE_API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gangwon-hyeonbeen-backend
+  namespace: hyeonbeen
+spec:
+  selector:
+    app: gangwon-hyeonbeen-backend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
