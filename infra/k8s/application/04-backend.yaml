@@ -16,7 +16,7 @@ spec:
       containers:
         - name: backend
           image: gangwon-hyeonbeen-backend:lite
-          imagePullPolicy: Never 
+          imagePullPolicy: Always 
           ports:
             - containerPort: 8000
           env:
