@@ -1,0 +1,5 @@
+[tool.poetry]
+name = "gangwon-hyeonbeen-backend"
+version = "0.1.1"
+description = "Gangwon Backend API"
+authors = ["Hyeonbeen"]
