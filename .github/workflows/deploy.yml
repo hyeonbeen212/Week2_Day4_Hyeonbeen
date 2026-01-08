@@ -1,0 +1,56 @@
+name: Deploy to EC2 with K8s
+
+on:
+  push:
+    branches:
+      - deploy/version
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: gangwon-hyeonbeen-backend
+  REGISTRY: ghcr.io
+  USERNAME: ${{ github.actor }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get version from pyproject.toml
+        id: version
+        run: |
+          VERSION=$(grep 'version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$VERSION-$SHORT_SHA" >> $GITHUB_ENV
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            kubectl set image deployment/gangwon-hyeonbeen-backend backend=${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -n hyeonbeen
+            kubectl rollout status deployment/gangwon-hyeonbeen-backend -n hyeonbeen
